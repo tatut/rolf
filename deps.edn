@@ -1,0 +1,5 @@
+{:paths ["src/cljs" "target" "resources"]
+ :deps {reagent {:mvn/version "0.9.0-rc1"}
+        org.clojure/clojurescript {:mvn/version "1.10.520"}}
+ :aliases {:dev {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]
+                 :extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.3"}}}}}

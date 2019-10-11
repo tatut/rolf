@@ -1,0 +1,3 @@
+^{:watch-dirs ["src/cljs"]}
+{:main rolf.demo
+ :open-url false}

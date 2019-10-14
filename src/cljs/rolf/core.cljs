@@ -57,6 +57,7 @@
   format-mvt "ol.format.MVT"
   source-osm "ol.source.OSM"
   source-vector-tile "ol.source.VectorTile"
+  source-vector "ol.source.Vector"
   tilegrid-wmts "ol.tilegrid.WMTS")
 
 (define-ol-component View "ol.View"

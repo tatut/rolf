@@ -7,7 +7,11 @@
   (cond
     (map? x)
     (reduce (fn [acc [key val]]
-              (aset acc (name key) (->js val))
+              (aset acc
+                    (if (keyword? key)
+                      (name key)
+                      key)
+                    (->js val))
               acc)
             #js {}
             x)
@@ -49,7 +53,8 @@
                      (fn [child-opts]
                        (-> child-opts
                            (update :key #(or % i))
-                           (assoc :rolf/map instance)))))
+                           (assoc :rolf/map instance
+                                  :rolf/index i)))))
            children)))])))
 
 (define-ol-constructors

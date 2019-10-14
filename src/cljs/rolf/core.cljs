@@ -55,7 +55,9 @@
 (define-ol-constructors
   format-geojson "ol.format.GeoJSON"
   format-mvt "ol.format.MVT"
-  source-osm "ol.source.OSM")
+  source-osm "ol.source.OSM"
+  source-vector-tile "ol.source.VectorTile"
+  tilegrid-wmts "ol.tilegrid.WMTS")
 
 (define-ol-component View "ol.View"
   (.setView m this)
@@ -71,5 +73,9 @@
     (.removeLayer m this)))
 
 (define-ol-component VectorLayer "ol.layer.Vector"
+  (.addLayer m this)
+  (.removeLayer m this))
+
+(define-ol-component VectorTileLayer "ol.layer.VectorTile"
   (.addLayer m this)
   (.removeLayer m this))

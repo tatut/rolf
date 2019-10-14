@@ -28,6 +28,7 @@
                                   (.toUpperCase (.substring prop-name# 0 1))
                                   (.substring prop-name# 1))]
 
+                 (js/console.log "SETTER: " setter#)
                  ;; get setter function, bind it to instance and call it with new value
                  ((.bind (aget @instance# setter#) @instance#) new-val#)))))
 

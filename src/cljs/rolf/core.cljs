@@ -60,11 +60,16 @@
 (define-ol-constructors
   format-geojson "ol.format.GeoJSON"
   format-mvt "ol.format.MVT"
+  tilegrid-wmts "ol.tilegrid.WMTS")
+
+(define-ol-constructors
   source-osm "ol.source.OSM"
   source-vector-tile "ol.source.VectorTile"
   source-vector "ol.source.Vector"
-  tilegrid-wmts "ol.tilegrid.WMTS"
   source-wmts "ol.source.WMTS")
+
+(define-ol-constructors
+  control-attribution "ol.control.Attribution")
 
 (define-ol-component View "ol.View"
   (.setView m this)

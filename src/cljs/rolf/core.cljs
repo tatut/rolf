@@ -63,7 +63,8 @@
   source-osm "ol.source.OSM"
   source-vector-tile "ol.source.VectorTile"
   source-vector "ol.source.Vector"
-  tilegrid-wmts "ol.tilegrid.WMTS")
+  tilegrid-wmts "ol.tilegrid.WMTS"
+  source-wmts "ol.source.WMTS")
 
 (define-ol-component View "ol.View"
   (.setView m this)

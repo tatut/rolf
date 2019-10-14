@@ -54,10 +54,8 @@
 
 (define-ol-constructors
   format-geojson "ol.format.GeoJSON"
-  source-osm "ol.source.OSM"
-  layer-tile "ol.layer.Tile"
-  view "ol.View"
-  )
+  format-mvt "ol.format.MVT"
+  source-osm "ol.source.OSM")
 
 (define-ol-component View "ol.View"
   (.setView m this)
@@ -71,3 +69,7 @@
   (do
     (js/console.log "removing tile layer!")
     (.removeLayer m this)))
+
+(define-ol-component VectorLayer "ol.layer.Vector"
+  (.addLayer m this)
+  (.removeLayer m this))

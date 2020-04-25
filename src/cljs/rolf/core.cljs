@@ -1,20 +1,8 @@
 (ns rolf.core
   "React OpenLayers Function components."
   (:require [reagent.core :as r]
-            [goog.object :as gobj]
-            react
-            ["ol" :as ol]
             ["ol/Map" :as ol-Map]
-            ["ol/View" :as ol-View]
-            ["ol/layer/Tile" :as ol-layer-Tile]
-            ["ol/layer/Vector" :as ol-layer-Vector]
-            ["ol/layer/VectorTile" :as ol-layer-VectorTile]
-            ["ol/format/GeoJSON" :as ol-format-GeoJSON]
-            ["ol/format/MVT" :as ol-format-MVT]
-            ["ol/tilegrid/WMTS" :as ol-tilegrid-WMTS]
-            ["ol/source/OSM" :as ol-source-OSM]
-            ["ol/source/Vector" :as ol-source-Vector]
-            ["ol/source/WMTS" :as ol-source-WMTS]))
+            ["ol/View" :as ol-View]))
 
 (defn ->js [x]
   (cond
@@ -38,8 +26,6 @@
 
     :else
     x))
-
-(def map-instance-context (react/createContext nil))
 
 (defn ol-class? [obj]
   (and (object? obj)
@@ -85,6 +71,7 @@
 (defn ->component
   "OpenLayers class to Reagent component"
   [ol-class {:keys [init cleanup]}]
+  (assert (ol-class? ol-class) "Expected an OpenLayers class")
   (let [cls (aget ol-class "default")
         class-name (aget cls "name")]
     (fn [opts & children]
@@ -117,6 +104,7 @@
 (defn ->constructor
   "OpenLayers class to constructor function"
   [ol-class]
+  (assert (ol-class? ol-class) "Expected an OpenLayers class")
   (let [cls (aget ol-class "default")]
     (fn [options]
       (new cls (->js options)))))

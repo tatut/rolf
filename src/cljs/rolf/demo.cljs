@@ -1,12 +1,17 @@
 (ns rolf.demo
   (:require [reagent.core :as r]
-            [rolf.core :refer [Map TileLayer View source-osm]]))
+            [reagent.dom :as dom]
+            [rolf.core :refer [Map View]]
+            [rolf.tile :refer [TileLayer]]
+            [rolf.osm :refer [osm-source]]
+            [rolf.proj :as proj]))
 
 (defn rolf-demo []
-  (r/with-let [show-layer? (r/atom true)
+  (r/with-let [show-layer? (r/atom false)
                zoom (r/atom 4)
-               center (r/atom (js/ol.proj.fromLonLat #js [47.31, 8.82]))
-               source (source-osm)]
+               center (r/atom (proj/from-lon-lat 8.82  47.31))
+               source (osm-source)]
+    (js/console.log "RENDER ROLF DEMO")
     [:div
      "this is ROLF = Reagent OpenLayers Functions/Framework"
      [:button {:on-click #(swap! show-layer? not)}
@@ -23,4 +28,4 @@
         [TileLayer {:source source}])]]))
 
 (defn ^:export main []
-  (r/render [rolf-demo] (js/document.getElementById "demoapp")))
+  (dom/render [rolf-demo] (js/document.getElementById "app")))

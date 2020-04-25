@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "ol": "^6.3.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  }
+}

@@ -1,7 +1,20 @@
 (ns rolf.core
-  "Reagent OpenLayers Function components."
-  (:require [reagent.core :as r])
-  (:require-macros [rolf.macros :refer [define-ol-component define-ol-constructors]]))
+  "React OpenLayers Function components."
+  (:require [reagent.core :as r]
+            [goog.object :as gobj]
+            react
+            ["ol" :as ol]
+            ["ol/Map" :as ol-Map]
+            ["ol/View" :as ol-View]
+            ["ol/layer/Tile" :as ol-layer-Tile]
+            ["ol/layer/Vector" :as ol-layer-Vector]
+            ["ol/layer/VectorTile" :as ol-layer-VectorTile]
+            ["ol/format/GeoJSON" :as ol-format-GeoJSON]
+            ["ol/format/MVT" :as ol-format-MVT]
+            ["ol/tilegrid/WMTS" :as ol-tilegrid-WMTS]
+            ["ol/source/OSM" :as ol-source-OSM]
+            ["ol/source/Vector" :as ol-source-Vector]
+            ["ol/source/WMTS" :as ol-source-WMTS]))
 
 (defn ->js [x]
   (cond
@@ -26,6 +39,27 @@
     :else
     x))
 
+(def map-instance-context (react/createContext nil))
+
+(defn ol-class? [obj]
+  (and (object? obj)
+       (some? (aget obj "default"))))
+
+(defn- create-map-instance [options elt]
+  (js/console.log "INIT MAP INSTANCE")
+  (new (aget ol-Map "default")
+       (->js (assoc options
+                    :target elt))))
+
+(defn children-with-keys [children]
+  (doall
+   (map-indexed
+    (fn [i child]
+      (if (contains? (meta child) :key)
+        child
+        (with-meta child {:key i})))
+    children)))
+
 (defn Map
   "Main OpenLayers map component.
 
@@ -33,61 +67,69 @@
 
   :width    CSS width of the map component
   :height   CSS height of the map component"
-  [options & _]
-  (let [instance (r/atom nil)
-        init! (fn [elt]
-                (reset! instance (js/ol.Map. (->js (assoc options
-                                                          :target elt)))))]
-    (fn [options & children]
-      [:<>
-       [:div {:style {:width (or (:width options) "100vw")
-                      :height (or (:height options) "100vh")}
-              :data-ol-class "ol.Map" :ref init!}]
-       (when-let [instance @instance]
-         (doall
-          (map-indexed
-           (fn [i child]
-             ;; Child is a vector child component like
-             ;; [somecomponent {:options "here"}]
-             (update child 1
-                     (fn [child-opts]
-                       (-> child-opts
-                           (update :key #(or % i))
-                           (assoc :rolf/map instance
-                                  :rolf/index i)))))
-           children)))])))
+  [options & children]
+  (r/with-let [instance (r/atom nil)
+               init! (fn [elt]
+                       (swap! instance
+                              #(or % (create-map-instance options elt))))]
+    [:div {:key "rolf-Map"
+           :style #js {:width (or (:width options) "100vw")
+                       :height (or (:height options) "100vh")}
+           :data-ol-class "ol.Map"
+           :ref init!}
+     (when-let [instance @instance]
+       (children-with-keys (map
+                            #(update % 1 assoc :rolf/map instance)
+                            children)))]))
 
-(define-ol-constructors
-  format-geojson "ol.format.GeoJSON"
-  format-mvt "ol.format.MVT"
-  tilegrid-wmts "ol.tilegrid.WMTS")
+(defn ->component
+  "OpenLayers class to Reagent component"
+  [ol-class {:keys [init cleanup]}]
+  (let [cls (aget ol-class "default")
+        class-name (aget cls "name")]
+    (fn [opts & children]
+      (r/with-let [instance (new cls (->js (dissoc opts :rolf/map)))
+                   _ (when init
+                       (init instance (:rolf/map opts)))
+                   prev-opts (atom opts)]
+        (doseq [[key new-val] opts
+                :let [old-val (get @prev-opts key)]
+                :when (not= old-val new-val)]
+          (let [prop-name (name key)
+                ;; PENDING: this setter name determination is very simplistic
+                setter-name (str "set"
+                                 (.toUpperCase (.substring prop-name 0 1))
+                                 (.substring prop-name 1))
+                setter (aget instance setter-name)]
+            (if setter
+              ((.bind setter instance) new-val)
+              (js/console.error (str "Invalid property for class " class-name
+                                     ", no setter: " setter-name)))))
+        (reset! prev-opts opts)
 
-(define-ol-constructors
-  source-osm "ol.source.OSM"
-  source-vector-tile "ol.source.VectorTile"
-  source-vector "ol.source.Vector"
-  source-wmts "ol.source.WMTS")
+        [:span {:data-ol-component class-name}
+         (children-with-keys children)]
 
-(define-ol-constructors
-  control-attribution "ol.control.Attribution")
+        (finally
+          (when cleanup
+            (cleanup instance (:rolf/map opts))))))))
 
-(define-ol-component View "ol.View"
-  (.setView m this)
-  nil)
+(defn ->constructor
+  "OpenLayers class to constructor function"
+  [ol-class]
+  (let [cls (aget ol-class "default")]
+    (fn [options]
+      (new cls (->js options)))))
 
-(define-ol-component TileLayer "ol.layer.Tile"
-  (do
-    (js/console.log "init tile layer!")
-    (.addLayer m this))
 
-  (do
-    (js/console.log "removing tile layer!")
-    (.removeLayer m this)))
+(def View
+  (->component
+   ol-View
+   {:init (fn [this m]
+            (.setView m this))}))
 
-(define-ol-component VectorLayer "ol.layer.Vector"
-  (.addLayer m this)
-  (.removeLayer m this))
 
-(define-ol-component VectorTileLayer "ol.layer.VectorTile"
-  (.addLayer m this)
-  (.removeLayer m this))
+(def layer-lifecycle {:init (fn [this m]
+                              (.addLayer m this))
+                      :cleanup (fn [this m]
+                                 (.removeLayer m this))})
